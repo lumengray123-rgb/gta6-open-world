@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SOLMARA — Streets of Solmara</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="game-container"></div>
+
+<!-- In-game HUD -->
+<div id="hud" style="display:none">
+  <canvas id="minimap" width="200" height="200"></canvas>
+  <div id="stats">
+    <div id="health-bar"><div id="health-fill"></div><span id="health-text">100 HP</span></div>
+    <div id="cash-row"><span id="cash">$0</span></div>
+    <div id="stars">☆☆☆☆☆</div>
+  </div>
+  <div id="objective-panel">
+    <div id="objective-label">Next Mission</div>
+    <div id="objective"></div>
+  </div>
+  <div id="speed-box"><span id="speed">0 km/h</span></div>
+  <div id="message"></div>
+  <div id="hint"></div>
+  <div id="crosshair">+</div>
+  <div id="damage-flash"></div>
+</div>
+
+<!-- Start screen -->
+<div id="start-screen">
+  <div class="panel start-panel">
+    <h1 class="title">SOLMARA</h1>
+    <p class="subtitle">STREETS OF SOLMARA</p>
+    <p class="blurb">A sun-soaked coastal city, and you just arrived with empty pockets.
+      Steal cars, outrun the Solmara PD, and work your way up from wheelman to
+      the biggest job the Gilded Palm casino has ever seen. Six missions.
+      One city. Yours for the taking.</p>
+    <div class="btn-row">
+      <button id="begin-btn" class="btn btn-gold">New Story</button>
+      <button id="continue-btn" class="btn" style="display:none">Continue</button>
+    </div>
+    <p id="save-note" class="save-note"></p>
+    <div class="controls">
+      <div><b>W A S D</b> move / drive</div>
+      <div><b>Mouse</b> look around (click to lock)</div>
+      <div><b>Shift</b> sprint</div>
+      <div><b>E</b> get in / out of a car</div>
+      <div><b>Click</b> shoot (on foot)</div>
+      <div><b>Space</b> handbrake</div>
+      <div><b>Esc / P</b> pause &amp; save</div>
+      <div><b>M</b> mute sound</div>
+    </div>
+    <p class="credit">An original game — city, characters, story and music made for this entry.</p>
+  </div>
+</div>
+
+<!-- Pause menu -->
+<div id="pause-menu" style="display:none">
+  <div class="panel">
+    <h2>Paused</h2>
+    <p>Your progress is saved.</p>
+    <div class="btn-row">
+      <button id="resume-btn" class="btn btn-gold">Resume</button>
+      <button id="restart-btn" class="btn">New Game</button>
+    </div>
+    <div class="controls">
+      <div><b>W A S D</b> move / drive</div>
+      <div><b>E</b> get in / out of a car</div>
+      <div><b>Click</b> shoot (on foot)</div>
+      <div><b>Space</b> handbrake</div>
+      <div><b>M</b> mute sound</div>
+    </div>
+  </div>
+</div>
+
+<!-- Mission briefing -->
+<div id="briefing" style="display:none">
+  <div class="panel briefing-panel">
+    <h2 id="briefing-title"></h2>
+    <p id="briefing-text"></p>
+    <p id="briefing-reward" class="reward"></p>
+    <div class="btn-row">
+      <button id="briefing-btn" class="btn btn-gold">Let's Go</button>
+    </div>
+  </div>
+</div>
+
+<!-- Busted / wasted -->
+<div id="busted-screen" style="display:none">
+  <div class="panel end-panel">
+    <h2 class="end-title busted">BUSTED</h2>
+    <p>The Solmara PD takes a cut of your cash and drops you at the plaza.</p>
+    <div class="btn-row">
+      <button id="busted-btn" class="btn btn-gold">Walk Free</button>
+    </div>
+  </div>
+</div>
+<div id="wasted-screen" style="display:none">
+  <div class="panel end-panel">
+    <h2 class="end-title wasted">WASTED</h2>
+    <p>You wake up at Solmara General, lighter in the pocket but alive.</p>
+    <div class="btn-row">
+      <button id="wasted-btn" class="btn btn-gold">Get Up</button>
+    </div>
+  </div>
+</div>
+
+<script src="vendor/three.min.js"></script>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>
