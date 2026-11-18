@@ -19,6 +19,7 @@ export class Player {
     this.walkPhase = 0;
     this.lastDamageAt = -99;
     this.moving = false;
+    this.enterCooldown = 0; // brief lockout after exiting, so one E press can't re-enter
   }
 
   get pos() {
@@ -65,10 +66,12 @@ export class Player {
     this.city.resolveCircle(this.group.position, PLAYER.radius);
     this.group.visible = true;
     this.car = null;
+    this.enterCooldown = 0.5;
   }
 
   update(dt, G) {
     const input = G.input;
+    this.enterCooldown = Math.max(0, this.enterCooldown - dt);
     // Health trickles back after a few quiet seconds.
     if (G.time - this.lastDamageAt > PLAYER.regenDelay && this.health > 0) {
       this.health = Math.min(PLAYER.maxHealth, this.health + PLAYER.regenRate * dt);
@@ -83,6 +86,9 @@ export class Player {
       if (input.pressed('KeyE') || input.pressed('KeyF')) {
         this.exitCar();
         G.audio.blip(440, 0.08);
+        G.audio.setEngine(null);
+        this.moving = false;
+        return;
       }
       G.audio.setEngine(Math.abs(this.car.speed) / DRIVING.maxSpeed);
       this.moving = Math.abs(this.car.speed) > 0.5;
@@ -129,7 +135,7 @@ export class Player {
     this.group.rotation.y = this.heading;
 
     // E near a car steals it.
-    if (input.pressed('KeyE')) {
+    if (input.pressed('KeyE') && this.enterCooldown <= 0) {
       const car = nearestCar(G.cars, this.group.position.x, this.group.position.z, DRIVING.enterRange);
       if (car) {
         this.enterCar(car);

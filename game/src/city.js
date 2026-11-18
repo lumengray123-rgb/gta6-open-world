@@ -65,8 +65,8 @@ function makeSignTexture(text, bg, fg) {
 export function buildCity(scene) {
   const rng = mulberry32(1337);
   const colliders = [];
-  const addCollider = (x, z, w, d) => {
-    colliders.push({ minX: x - w / 2, maxX: x + w / 2, minZ: z - d / 2, maxZ: z + d / 2 });
+  const addCollider = (x, z, w, d, h = 40) => {
+    colliders.push({ minX: x - w / 2, maxX: x + w / 2, minZ: z - d / 2, maxZ: z + d / 2, h });
   };
 
   // --- ground, roads, sidewalks ----------------------------------------
@@ -159,19 +159,28 @@ export function buildCity(scene) {
   const landmarkAt = new Map();
   for (const [key, lb] of Object.entries(LANDMARK_BLOCKS)) landmarkAt.set(`${lb.bx},${lb.bz}`, { key, ...lb });
 
+  // Facade materials: one per colour × window-density band, so tall towers
+  // get dense windows and low blocks get few — no stretched giant windows.
   const facadeMats = PALETTE.building.map(
-    (c, i) => new THREE.MeshLambertMaterial({ color: c, map: windowTex[i % 3] }),
+    (c) => windowTex.map((t) => new THREE.MeshLambertMaterial({ color: c, map: t })),
   );
   const roofMats = PALETTE.roof.map((c) => new THREE.MeshLambertMaterial({ color: c }));
 
   function addBuilding(x, z, w, h, d, opts = {}) {
-    const side = opts.material || pick(rng, facadeMats);
-    const roof = pick(rng, roofMats);
-    const mesh = new THREE.Mesh(boxGeo, [side, side, roof, roof, side, side]);
+    const band = h < 12 ? 0 : h < 22 ? 1 : 2;
+    const side = opts.material || pick(rng, facadeMats)[band];
+    // One material for the whole box (a 6-material box costs 6 draw calls);
+    // the roof gets its own thin slab instead.
+    const mesh = new THREE.Mesh(boxGeo, side);
     mesh.scale.set(w, h, d);
     mesh.position.set(x, h / 2, z);
     scene.add(mesh);
-    addCollider(x, z, w, d);
+    const roof = pick(rng, roofMats);
+    const slab = new THREE.Mesh(boxGeo, roof);
+    slab.scale.set(w + 0.3, 0.35, d + 0.3);
+    slab.position.set(x, h + 0.1, z);
+    scene.add(slab);
+    addCollider(x, z, w, d, h);
     if (!opts.noRoofProp && chance(rng, 0.5)) {
       const ac = new THREE.Mesh(boxGeo, roof);
       const s = range(rng, 1.5, 3);
@@ -217,7 +226,7 @@ export function buildCity(scene) {
           );
           col.position.set(bx, 3, bz);
           scene.add(col);
-          addCollider(bx, bz, 16, 16);
+          addCollider(bx, bz, 16, 16, 1);
           continue;
         }
         if (lm.kind === 'docks') {
@@ -233,7 +242,7 @@ export function buildCity(scene) {
             cont.scale.set(6, 2.6, 2.6);
             cont.position.set(cx, 1.3, cz);
             scene.add(cont);
-            addCollider(cx, cz, 6, 2.6);
+            addCollider(cx, cz, 6, 2.6, 2.6);
           }
           for (const off of [-12, 12]) {
             const leg = new THREE.Mesh(boxGeo, new THREE.MeshLambertMaterial({ color: 0xd8a83a }));
@@ -244,7 +253,7 @@ export function buildCity(scene) {
             arm.scale.set(20, 1.2, 1.2);
             arm.position.set(bx + off, 21.5, bz + 8);
             scene.add(arm);
-            addCollider(bx + off, bz + 14, 2, 2);
+            addCollider(bx + off, bz + 14, 2, 2, 22);
           }
           addSign(bx, 8, bz - 18, 'SOLMARA DOCKS', '#1c2a3a', '#ffd98a', 20);
           continue;

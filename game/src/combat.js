@@ -54,7 +54,8 @@ export class Combat {
     return tca - Math.sqrt(radius * radius - d2);
   }
 
-  // Ray vs building AABBs (y range 0..40); returns distance or Infinity.
+  // Ray vs building AABBs; each collider carries its real height, so low
+  // structures (containers, the fountain) never block shots over them.
   rayBuildings(ox, oy, oz, dx, dy, dz) {
     let best = Infinity;
     for (const c of this.city.colliders) {
@@ -82,7 +83,7 @@ export class Combat {
         if (tmin > tmax) continue;
       }
       const hitY = oy + dy * tmin;
-      if (hitY < 0 || hitY > 40) continue;
+      if (hitY < 0 || hitY > (c.h || 40)) continue;
       if (tmin < best) best = tmin;
     }
     return best;

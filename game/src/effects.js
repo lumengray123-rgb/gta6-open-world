@@ -18,8 +18,20 @@ export class Effects {
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(this.positions, 3));
     geo.setAttribute('color', new THREE.BufferAttribute(this.colors, 3));
+    // Soft round sprite so particles read as sparks and smoke, not squares.
+    const sprite = document.createElement('canvas');
+    sprite.width = 32;
+    sprite.height = 32;
+    const sg = sprite.getContext('2d');
+    const grad = sg.createRadialGradient(16, 16, 0, 16, 16, 16);
+    grad.addColorStop(0, 'rgba(255,255,255,1)');
+    grad.addColorStop(0.5, 'rgba(255,255,255,0.7)');
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+    sg.fillStyle = grad;
+    sg.fillRect(0, 0, 32, 32);
     const mat = new THREE.PointsMaterial({
-      size: 0.5, vertexColors: true, transparent: true, opacity: 0.95, depthWrite: false,
+      size: 0.22, map: new THREE.CanvasTexture(sprite), vertexColors: true,
+      transparent: true, opacity: 0.95, depthWrite: false,
     });
     this.points = new THREE.Points(geo, mat);
     this.points.frustumCulled = false;

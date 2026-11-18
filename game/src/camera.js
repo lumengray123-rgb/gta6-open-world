@@ -21,8 +21,9 @@ export function updateCamera(dt, G) {
 
   const player = G.player;
   const driving = player.isDriving();
-  // While driving, the camera drifts back behind the car when the mouse rests.
-  if (driving && G.time - G.lastMouseAt > 1.5) {
+  // While driving, the camera drifts back behind the car when the mouse rests
+  // (in screenshot mode the shot staging owns the camera angle instead).
+  if (driving && G.time - G.lastMouseAt > 1.5 && !G.shotMode) {
     let diff = player.car.heading - G.camYaw;
     while (diff > Math.PI) diff -= Math.PI * 2;
     while (diff < -Math.PI) diff += Math.PI * 2;

@@ -41,9 +41,9 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(PALETTE.sky);
 scene.fog = new THREE.Fog(PALETTE.fog, 70, 340);
 
-const hemi = new THREE.HemisphereLight(0xbfd9e8, 0x8a7a5a, 0.95);
+const hemi = new THREE.HemisphereLight(0xbfd9e8, 0x8a7a5a, 0.72);
 scene.add(hemi);
-const sun = new THREE.DirectionalLight(PALETTE.sun, 1.25);
+const sun = new THREE.DirectionalLight(PALETTE.sun, 1.05);
 sun.position.set(90, 140, 60);
 scene.add(sun);
 
@@ -245,6 +245,7 @@ const params = new URLSearchParams(window.location.search);
 const shot = params.get('shot');
 if (shot && ['cover', 'street', 'mission', 'combat'].includes(shot)) {
   G.shotMode = true;
+  G.shotWallStart = performance.now();
   applyShot(shot, G);
 } else {
   G.hud.showStart(hasSave());
@@ -260,7 +261,9 @@ function animate() {
   G.time += dt;
   G.frame += 1;
 
-  if (G.state === 'menu') {
+  // One bad frame must never kill the loop: log it and keep rendering.
+  try {
+    if (G.state === 'menu') {
     // Slow cinematic orbit over the city behind the start screen.
     menuAngle += dt * 0.03;
     camera.position.set(Math.sin(menuAngle) * 150, 62, Math.cos(menuAngle) * 150);
@@ -285,7 +288,7 @@ function animate() {
       }
     });
     handleDeadCars(dt);
-    G.police.update(dt, G);
+    if (!G.shotMode) G.police.update(dt, G);
     if (G.state === 'playing') {
       if (!G.shotMode) G.missions.update(dt, G);
       G.combat.update(dt, G);
@@ -317,13 +320,19 @@ function animate() {
     }
   }
   // briefing / busted / wasted: the world freezes; the overlay handles input.
+  } catch (e) {
+    console.error('[solmara] frame error:', e);
+  }
 
   G.input.endFrame();
   renderer.render(scene, camera);
 
-  // Screenshot readiness: the scene has settled after ~2 seconds.
-  if (G.shotMode && !window.__solmaraShotReady && G.frame > 110) {
-    window.__solmaraShotReady = true;
+  // Screenshot readiness: the scene has settled after ~2 seconds of game
+  // time, or 90 seconds of wall time on very slow (software) renderers.
+  if (G.shotMode && !window.__solmaraShotReady) {
+    if (G.frame > 110 || performance.now() - G.shotWallStart > 90000) {
+      window.__solmaraShotReady = true;
+    }
   }
 }
 animate();
